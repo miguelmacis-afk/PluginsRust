@@ -19,7 +19,7 @@ namespace Oxide.Plugins
     {
         [PluginReference] private Plugin NpcSpawn;
         private PluginConfig config;
-		private bool dev = false;
+		private bool dev = true;
         
         private readonly List<BaseEntity> spawnedEntities = new List<BaseEntity>();
         private readonly HashSet<ulong> spawnedEntityIds = new HashSet<ulong>();
@@ -378,38 +378,40 @@ namespace Oxide.Plugins
             radiusMarker?.SendUpdate();
         }
 
-        private void CreateEventMapMarkers(Vector3 position)
-        {
-            redCircleMarker = GameManager.server.CreateEntity("assets/prefabs/tools/map/genericradiusmarker.prefab", position);
-            MapMarkerGenericRadius radiusMarker = redCircleMarker as MapMarkerGenericRadius;
-            if (radiusMarker != null)
-            {
-                radiusMarker.Spawn();
-                radiusMarker.radius = 1.0f;       
-                radiusMarker.alpha = 0.35f;       
-                Color markerColor;
-                ColorUtility.TryParseHtmlString(config.Difficulties[CurrentDifficulty].MarkerColor, out markerColor);
+		private void CreateEventMapMarkers(Vector3 position)
+		{
+			redCircleMarker = GameManager.server.CreateEntity("assets/prefabs/tools/map/genericradiusmarker.prefab", position);
+			MapMarkerGenericRadius radiusMarker = redCircleMarker as MapMarkerGenericRadius;
+			if (radiusMarker != null)
+			{
+				radiusMarker.Spawn();
+				radiusMarker.radius = 1.0f;       
+				radiusMarker.alpha = 0.35f;       
+				Color markerColor;
+				ColorUtility.TryParseHtmlString(config.Difficulties[CurrentDifficulty].MarkerColor, out markerColor);
 
-                radiusMarker.color1 = markerColor;  
-                radiusMarker.color2 = markerColor;  
-                
-                radiusMarker.SendUpdate();
-            }
+				radiusMarker.color1 = markerColor;  
+				radiusMarker.color2 = markerColor;  
+				
+				radiusMarker.SendUpdate();
+			}
 
-            shopMapMarker = GameManager.server.CreateEntity("assets/prefabs/deployable/vendingmachine/vending_mapmarker.prefab", position);
-            if (shopMapMarker != null)
-            {
-                VendingMachineMapMarker vendingMarker = shopMapMarker as VendingMachineMapMarker;
-                if (vendingMarker != null)
-                {
-                    vendingMarker.markerShopName = "★ EVENTO: CÚPULA ★";
-                    vendingMarker.SetFlag(BaseEntity.Flags.On, true);
-                }
-                
-                shopMapMarker.Spawn();
-                vendingMarker?.SendNetworkUpdate(); 
-            }
-        }
+			shopMapMarker = GameManager.server.CreateEntity("assets/prefabs/deployable/vendingmachine/vending_mapmarker.prefab", position);
+			if (shopMapMarker != null)
+			{
+				VendingMachineMapMarker vendingMarker = shopMapMarker as VendingMachineMapMarker;
+				if (vendingMarker != null)
+				{
+					vendingMarker.markerShopName = "★ EVENTO: CÚPULA ★";
+				}
+				
+				// Asignación directa por bitwise (100% inmune a cambios de métodos en parches de Rust)
+				shopMapMarker.flags |= BaseEntity.Flags.On;
+				
+				shopMapMarker.Spawn();
+				vendingMarker?.SendNetworkUpdate(); 
+			}
+		}
 		private Timer CreateTimer(float delay, Action action) { Timer t = timer.Once(delay, action); activeTimers.Add(t); return t; }
         private Timer CreateTimerRepeat(float delay, Action action) { Timer t = timer.Every(delay, action); activeTimers.Add(t); return t; }
         private void KillAllTimers() { foreach (var t in activeTimers) { if (t != null) t.Destroy(); } activeTimers.Clear(); eventTimer = autoStartTimer = heliTimer1 = heliTimer2 = heliDestinationTimer = markerUpdateTimer = clockTimer = playerCheckTimer = null; }
@@ -948,14 +950,17 @@ namespace Oxide.Plugins
                     RegisterEntity(door); 
 
                     if (GameManager.server.CreateEntity("assets/prefabs/locks/keypad/lock.code.prefab", Vector3.zero, Quaternion.identity) is CodeLock codeLock)
-                    {
-                        codeLock.code = $"{UnityEngine.Random.Range(0, 10000):D4}";
-                        codeLock.Spawn();
-                        
-                        codeLock.SetParent(door, door.GetSlotAnchorName(BaseEntity.Slot.Lock));
-                        door.SetSlot(BaseEntity.Slot.Lock, codeLock);
-                        codeLock.SetFlag(BaseEntity.Flags.Locked, true);
-                    }
+					{
+						codeLock.code = $"{UnityEngine.Random.Range(0, 10000):D4}";
+						codeLock.Spawn();
+						
+						codeLock.SetParent(door, door.GetSlotAnchorName(BaseEntity.Slot.Lock));
+						door.SetSlot(BaseEntity.Slot.Lock, codeLock);
+
+						// En lugar de codeLock.SetFlag(...) usamos modificación directa de flags:
+						codeLock.flags |= BaseEntity.Flags.Locked;
+						codeLock.SendNetworkUpdate();
+					}
                 }
                 yield return wait05; 
             }
@@ -996,32 +1001,37 @@ namespace Oxide.Plugins
             RegisterEntity(entity); 
 
             if (entity is AutoTurret turret) 
-            {
-                turret.SetFlag(BaseEntity.Flags.On, false); 
-                turret.OwnerID = 0;
-                
-                NextTick(() => {
-                    if (turret == null || turret.IsDestroyed) return;
-                    
-                    turret.inventory.Clear();
-                    
-                    var weapon = ItemManager.CreateByName("rifle.ak", 1); 
-                    if (weapon != null && !weapon.MoveToContainer(turret.inventory, 0)) { 
-                        weapon.SetParent(turret.inventory); weapon.position = 0; 
-                    }
-                    
-                    var ammo = ItemManager.CreateByName("ammo.rifle", 1028); 
-                    if (ammo != null && !ammo.MoveToContainer(turret.inventory, 1)) { 
-                        ammo.SetParent(turret.inventory); ammo.position = 1; 
-                    }
-                    
-                    turret.UpdateTotalAmmo(); 
-                    turret.inventory.MarkDirty(); 
-                    turret.SetFlag(BaseEntity.Flags.On, true); 
-                    
-                    turret.SendNetworkUpdate();
-                });
-            }
+			{
+				// Apagar la torreta con bitwise seguro
+				turret.flags &= ~BaseEntity.Flags.On; 
+				turret.OwnerID = 0;
+				
+				NextTick(() => {
+					if (turret == null || turret.IsDestroyed) return;
+					
+					turret.inventory.Clear();
+					
+					var weapon = ItemManager.CreateByName("rifle.ak", 1); 
+					if (weapon != null) 
+					{ 
+						weapon.MoveToContainer(turret.inventory, 0);
+					}
+					
+					var ammo = ItemManager.CreateByName("ammo.rifle", 1028); 
+					if (ammo != null) 
+					{ 
+						ammo.MoveToContainer(turret.inventory, 1);
+					}
+					
+					turret.UpdateTotalAmmo(); 
+					turret.inventory.MarkDirty(); 
+					
+					// Encender la torreta con bitwise seguro
+					turret.flags |= BaseEntity.Flags.On; 
+					
+					turret.SendNetworkUpdate();
+				});
+			}
             return entity;
         }
 
@@ -1080,35 +1090,39 @@ namespace Oxide.Plugins
             spawnedEntityIds.Add(entity.net.ID.Value);
 
             if (entity is AutoTurret turret)
-            {
-                turret.SetFlag(BaseEntity.Flags.On, false);
-                turret.OwnerID = 0;
+			{
+				// Apagar la torreta usando bitwise
+				turret.flags &= ~BaseEntity.Flags.On;
+				turret.OwnerID = 0;
 
-                NextTick(() =>
-                {
-                    if (turret == null || turret.IsDestroyed) return;
-                    turret.inventory.Clear();
+				NextTick(() =>
+				{
+					if (turret == null || turret.IsDestroyed) return;
 
-                    var weapon = ItemManager.CreateByName("rifle.ak", 1);
-                    if (weapon != null && !weapon.MoveToContainer(turret.inventory, 0))
-                    {
-                        weapon.SetParent(turret.inventory);
-                        weapon.position = 0;
-                    }
+					turret.inventory.Clear();
 
-                    var ammo = ItemManager.CreateByName("ammo.rifle", 128);
-                    if (ammo != null && !ammo.MoveToContainer(turret.inventory, 1))
-                    {
-                        ammo.SetParent(turret.inventory);
-                        ammo.position = 1;
-                    }
+					// Asignar arma en el slot 0 (arma principal)
+					var weapon = ItemManager.CreateByName("rifle.ak", 1);
+					if (weapon != null)
+					{
+						weapon.MoveToContainer(turret.inventory, 0);
+					}
 
-                    turret.UpdateTotalAmmo();
-                    turret.inventory.MarkDirty();
-                    turret.SetFlag(BaseEntity.Flags.On, true);
-                    turret.SendNetworkUpdate();
-                });
-            }
+					// Asignar munición en el slot 1
+					var ammo = ItemManager.CreateByName("ammo.rifle", 128);
+					if (ammo != null)
+					{
+						ammo.MoveToContainer(turret.inventory, 1);
+					}
+
+					turret.UpdateTotalAmmo();
+					turret.inventory.MarkDirty();
+
+					// Encender la torreta usando bitwise
+					turret.flags |= BaseEntity.Flags.On;
+					turret.SendNetworkUpdate();
+				});
+			}
         }
 
         object OnTurretTarget(AutoTurret turret, BaseEntity target)

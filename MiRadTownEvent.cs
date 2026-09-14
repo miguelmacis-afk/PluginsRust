@@ -13,7 +13,7 @@ using UnityEngine.Networking;
 
 namespace Oxide.Plugins
 {
-    [Info("Radtown Event", "☠ Ⓜ🅘ⓖ🅤ⓔ🅛 ☠", "2.4.1")] // Versión actualizada (Optimized)
+    [Info("Radtown Event", "☠ Ⓜ🅘ⓖ🅤ⓔ🅛 ☠", "2.4.1")]  
     [Description("Evento automatizado para Radtown con NPCs, caja hackeable, cajas élite, torretas, marcadores dinámicos y Helicópteros.")]
     public class MiRadTownEvent : RustPlugin
     {
@@ -399,7 +399,7 @@ namespace Oxide.Plugins
                 if (vendingMarker != null)
                 {
                     vendingMarker.markerShopName = "★ EVENTO: RADTOWN ★";
-                    vendingMarker.SetFlag(BaseEntity.Flags.On, true);
+                    vendingMarker.flags |= BaseEntity.Flags.On;
                 }
                 
                 shopMapMarker.Spawn();
@@ -884,7 +884,7 @@ namespace Oxide.Plugins
                     {
                         codeLock.code = $"{UnityEngine.Random.Range(0, 10000):D4}"; codeLock.Spawn();
                         codeLock.SetParent(door, door.GetSlotAnchorName(BaseEntity.Slot.Lock));
-                        door.SetSlot(BaseEntity.Slot.Lock, codeLock); codeLock.SetFlag(BaseEntity.Flags.Locked, true);
+                        door.SetSlot(BaseEntity.Slot.Lock, codeLock); codeLock.flags |= BaseEntity.Flags.Locked;
                     }
                 }
                 yield return wait005; 
@@ -918,7 +918,7 @@ namespace Oxide.Plugins
 
             if (entity is AutoTurret turret) 
             {
-                turret.SetFlag(BaseEntity.Flags.On, false); turret.OwnerID = 0;
+                turret.flags &= ~BaseEntity.Flags.On; turret.OwnerID = 0;
                 NextTick(() => {
                     if (turret == null || turret.IsDestroyed) return;
                     turret.inventory.Clear();
@@ -930,7 +930,7 @@ namespace Oxide.Plugins
                     if (ammo != null && !ammo.MoveToContainer(turret.inventory, 1)) { ammo.SetParent(turret.inventory); ammo.position = 1; }
                     
                     turret.UpdateTotalAmmo(); turret.inventory.MarkDirty(); 
-                    turret.SetFlag(BaseEntity.Flags.On, true); turret.SendNetworkUpdate();
+                    turret.flags |= BaseEntity.Flags.On; turret.SendNetworkUpdate();
                 });
             }
             return entity;

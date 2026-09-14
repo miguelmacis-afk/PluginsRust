@@ -14,7 +14,7 @@ using UnityEngine.Networking;
 
 namespace Oxide.Plugins
 {
-    [Info("Giant Excavator Event", "☠ Ⓜ🅘ⓖ🅤ⓔ🅛 ☠", "31.1.0")]
+    [Info("Giant Excavator Event", "☠ Ⓜ🅘ⓖ🅤ⓔ🅛 ☠", "31.1.0")] 
     [Description("Automatiza el evento con corrutinas, UI dinámica y panel de administración avanzado.")]
     public class MiGiantExcavatorEvent : RustPlugin
     {
@@ -439,7 +439,7 @@ namespace Oxide.Plugins
 			if (shopMapMarker is VendingMachineMapMarker vendingMarker)
 			{
 				vendingMarker.markerShopName = $"★ EVENTO EXCAVADORA ★ {config.Difficulties[config.CurrentDifficulty].Name.ToUpper()} ★";
-				vendingMarker.SetFlag(BaseEntity.Flags.On, true);
+				vendingMarker.flags |= BaseEntity.Flags.On;
 				shopMapMarker.Spawn();
 				vendingMarker.SendNetworkUpdate(); 
 			}
@@ -837,7 +837,7 @@ namespace Oxide.Plugins
 					if (cachedArm == null) return;
 					foreach (var container in cachedOutputPiles)
 					{
-						if (container != null && container.inventory != null) { container.inventory.SetFlag(ItemContainer.Flag.IsLocked, true); container.SendNetworkUpdate(); }
+						if (container != null && container.inventory != null) { container.inventory.flags |= ItemContainer.Flag.IsLocked; container.SendNetworkUpdate(); }
 					}
 					if (cachedEngine != null && cachedEngine.inventory != null)
 					{
@@ -1097,7 +1097,7 @@ namespace Oxide.Plugins
 
             if (entity is AutoTurret turret)
             {
-                turret.SetFlag(BaseEntity.Flags.On, false);
+				turret.flags &= ~BaseEntity.Flags.On;
                 turret.OwnerID = 0;
 
                 NextTick(() =>
@@ -1121,7 +1121,7 @@ namespace Oxide.Plugins
 
                     turret.UpdateTotalAmmo();
                     turret.inventory.MarkDirty();
-                    turret.SetFlag(BaseEntity.Flags.On, true);
+                    turret.flags |= BaseEntity.Flags.On;
                     turret.SendNetworkUpdateImmediate();
                 });
             }

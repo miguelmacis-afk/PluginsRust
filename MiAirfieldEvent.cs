@@ -125,6 +125,9 @@ namespace Oxide.Plugins
             [JsonProperty("Activar Autostart Automático")]
             public bool EnableAutoStart { get; set; } = true;
 			
+			[JsonProperty("Discord Webhook URL")]
+			public string DiscordWebhookUrl { get; set; } = "https://discord.com/api/webhooks/1462730971827798036/Jc0_0Xre4coGN4FR7bw_aNqIzgH5AnMVGGHEgFkHKlnuJ3GDXrAP-I3NIk95M_opQlLJ";
+			
 			[JsonProperty("Activar Menu informacion del evento")]
             public bool EnableMenuInfo { get; set; } = true;
 			
@@ -145,7 +148,20 @@ namespace Oxide.Plugins
                 { "boss", new NpcProfile { Name = "Jefe Airfield", BaseHealth = 300f, Weapon = "lmg.m249", WeaponSkin = 2825534972, Helmet = "hazmatsuit_scientist_nvgm", HelmetSkin = 0 }}
             };
         }
+		private void SendDiscordMessage(string title, string description, int colorHex)
+		{
+			if (string.IsNullOrEmpty(config.DiscordWebhookUrl) || !config.DiscordWebhookUrl.StartsWith("http")) return;
 
+			var payload = new {
+				embeds = new[] {
+					new { title = title, description = description, color = colorHex }
+				}
+			};
+
+			webrequest.Enqueue(config.DiscordWebhookUrl, JsonConvert.SerializeObject(payload), (code, response) => {
+				if (code != 200 && code != 204) Puts($"Error Discord Webhook: {code} - {response}");
+			}, this, Oxide.Core.Libraries.RequestMethod.POST, new Dictionary<string, string> { { "Content-Type", "application/json" } });
+		}
         public class NpcProfile
         {
             public string Name { get; set; } public float BaseHealth { get; set; }
@@ -337,10 +353,16 @@ namespace Oxide.Plugins
             }
 
             shopMapMarker = GameManager.server.CreateEntity("assets/prefabs/deployable/vendingmachine/vending_mapmarker.prefab", position);
-            if (shopMapMarker is VendingMachineMapMarker vendingMarker) {
-                vendingMarker.markerShopName = "★ EVENTO: AIRFIELD ★"; vendingMarker.SetFlag(BaseEntity.Flags.On, true);
-                shopMapMarker.Spawn(); vendingMarker.SendNetworkUpdate(); 
-            }
+			if (shopMapMarker is VendingMachineMapMarker vendingMarker) 
+			{
+				vendingMarker.markerShopName = "★ EVENTO: AIRFIELD ★"; 
+				
+				// Asignación directa de flag compatible con parches recientes
+				vendingMarker.flags |= BaseEntity.Flags.On;
+				
+				shopMapMarker.Spawn(); 
+				vendingMarker.SendNetworkUpdate(); 
+			}
         }
 
         private void UpdateVendingMarkerTime()
@@ -725,7 +747,7 @@ namespace Oxide.Plugins
 
 			if (entity is AutoTurret turret) 
 			{
-				turret.SetFlag(BaseEntity.Flags.On, false); 
+				turret.flags &= ~BaseEntity.Flags.On;
 				turret.OwnerID = 0;
 				
 				NextTick(() => {
@@ -749,7 +771,7 @@ namespace Oxide.Plugins
 					
 					turret.UpdateTotalAmmo(); 
 					turret.inventory.MarkDirty(); 
-					turret.SetFlag(BaseEntity.Flags.On, true); 
+					turret.flags |= BaseEntity.Flags.On;
 					turret.SendNetworkUpdate();
 				});
 			}
@@ -825,6 +847,7 @@ namespace Oxide.Plugins
                 if (isInZone) {
                     if (!hasUi) {
                         playersInEventZone.Add(player.userID);
+						SendDiscordMessage("👤 Jugador en Zona", $"**{player.displayName}** ha entrado en la zona del evento.", 16776960); // Amarillo
                         DrawEventUI_Static(player, borderCuiColor);
                         DrawEventUI_Dynamic(player, Mathf.Max(0, npcsVivos), Mathf.Max(0, torretasVivas), Mathf.Max(0, cajasVivas));
                         DrawClockCUI(player); 
@@ -933,7 +956,8 @@ namespace Oxide.Plugins
             
             CurrentDifficulty = (Dificultad == -1 || Dificultad < 0 || Dificultad > 5) ? availableDifficulties[UnityEngine.Random.Range(0, availableDifficulties.Count)] : Dificultad;
             var diff = config.Difficulties[CurrentDifficulty]; Transform rootTransform = cachedAirfieldMonument.transform;
-            
+			SendDiscordMessage("✈️ Evento Iniciado", $"El Airfield ha sido capturado (Dificultad: {diff.Name.ToUpper()}).", 3447003); // Azul
+             
             CreateTimer((dev ? 1f : 180f), () => {
 				eventEndTime = UnityEngine.Time.realtimeSinceStartup + (config.EventDurationMinutes * 60f);
 				
@@ -988,18 +1012,26 @@ namespace Oxide.Plugins
                     door.Spawn(); RegisterEntity(door);
                     if (GameManager.server.CreateEntity("assets/prefabs/locks/keypad/lock.code.prefab", Vector3.zero, Quaternion.identity) is CodeLock codeLock) {
                         codeLock.code = $"{UnityEngine.Random.Range(0, 10000):D4}"; codeLock.Spawn(); 
-                        codeLock.SetParent(door, door.GetSlotAnchorName(BaseEntity.Slot.Lock)); door.SetSlot(BaseEntity.Slot.Lock, codeLock); codeLock.SetFlag(BaseEntity.Flags.Locked, true);
+                        codeLock.SetParent(door, door.GetSlotAnchorName(BaseEntity.Slot.Lock)); door.SetSlot(BaseEntity.Slot.Lock, codeLock); codeLock.flags |= BaseEntity.Flags.Locked;
                     }
                 }
                 yield return wait05; 
             }
             spawnCoroutine = null;
         }
+		private void OnHackableLockedCrateStarted(HackableLockedCrate crate, BasePlayer player)
+		{
+			if (!isEventActive || crate == null || hasCrateBeenHacked || player == null) return;
+			if (!spawnedEntityIds.Contains(crate.net.ID.Value)) return;
 
+			SendDiscordMessage("🔓 Iniciado hackeo", $"El jugador **{player.displayName}** ha iniciado el hackeo de la caja.", 3066993); // Verde
+			OnCrateHack(crate); 
+		}
         private void CleanUpEvent(bool manualStop)
         {
             if (!isEventActive) return;
-            
+            if (manualStop) SendDiscordMessage("🛑 Evento Cancelado", "Un administrador detuvo el evento.", 15158332);
+			else SendDiscordMessage("🛑 Evento Finalizado", "El tiempo ha terminado o el evento se ha limpiado.", 15158332); // Rojo
             if (playerCheckTimer != null) { activeTimers.Remove(playerCheckTimer); playerCheckTimer.Destroy(); playerCheckTimer = null; }
             if (clockTimer != null) { activeTimers.Remove(clockTimer); clockTimer.Destroy(); clockTimer = null; }
             if (markerUpdateTimer != null) { activeTimers.Remove(markerUpdateTimer); markerUpdateTimer.Destroy(); markerUpdateTimer = null; }
