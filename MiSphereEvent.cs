@@ -13,7 +13,7 @@ using UnityEngine.Networking;
 
 namespace Oxide.Plugins
 {
-    [Info("Cupula Event", "☠ Ⓜ🅘ⓖ🅤ⓔ🅛 ☠", "2.4.0")]
+    [Info("Cupula Event", "☠ Ⓜ🅘ⓖ🅤ⓔ🅛 ☠", "2.4.1")]
     [Description("Evento automatizado para la Cúpula con NPCs, caja hackeable, cajas élite, torretas, marcadores dinámicos y Helicópteros.")]
     public class MiSphereEvent : RustPlugin
     {
