@@ -178,12 +178,12 @@ namespace Oxide.Plugins
             {
                 Difficulties = new Dictionary<int, DifficultySettings>
                 {
-                    { 0, new DifficultySettings { Name = "easy", Enabled = true, Resource = 4, MinDiesel = 5, MaxDiesel = 10, HealthMultiplier = 1.0f, RangeMultiplier = 1.0f, AimDamageMultiplier = 1.0f, skinTurret = 3732045248, MarkerColor = "#3cd834" } },
-                    { 1, new DifficultySettings { Name = "normal", Enabled = true, Resource = 4, MinDiesel = 10, MaxDiesel = 15, HealthMultiplier = 1.2f, RangeMultiplier = 1.2f, AimDamageMultiplier = 1.2f, skinTurret = 3732045248, MarkerColor = "#e57109" } },
-                    { 2, new DifficultySettings { Name = "medium", Enabled = true, Resource = 4, MinDiesel = 15, MaxDiesel = 20, HealthMultiplier = 1.5f, RangeMultiplier = 1.5f, AimDamageMultiplier = 1.5f, skinTurret = 3732045248, MarkerColor = "#e7c50a" } },
-                    { 3, new DifficultySettings { Name = "hard", Enabled = true, Resource = 4, MinDiesel = 20, MaxDiesel = 25, HealthMultiplier = 2.0f, RangeMultiplier = 2.0f, AimDamageMultiplier = 2.0f, skinTurret = 3732045248, MarkerColor = "#9c1825" } },
-                    { 4, new DifficultySettings { Name = "expert", Enabled = true, Resource = 4, MinDiesel = 25, MaxDiesel = 30, HealthMultiplier = 2.5f, RangeMultiplier = 2.5f, AimDamageMultiplier = 2.5f, skinTurret = 3732045248, MarkerColor = "#0000FF" } },
-                    { 5, new DifficultySettings { Name = "nightmare", Enabled = true, Resource = 4, MinDiesel = 30, MaxDiesel = 35, HealthMultiplier = 3.5f, RangeMultiplier = 3.5f, AimDamageMultiplier = 3.5f, skinTurret = 3732445397, MarkerColor = "#9236f5" } }
+                    { 0, new DifficultySettings { Name = "easy", Enabled = true, Resource = 4, MinDiesel = 5, MaxDiesel = 10, HealthMultiplier = 0.5f, RangeMultiplier = 0.5f, AimDamageMultiplier = 0.5f, skinTurret = 3732045248, MarkerColor = "#3cd834" } },
+                    { 1, new DifficultySettings { Name = "normal", Enabled = true, Resource = 4, MinDiesel = 10, MaxDiesel = 15, HealthMultiplier = 0.7f, RangeMultiplier = 0.7f, AimDamageMultiplier = 0.7f, skinTurret = 3732045248, MarkerColor = "#e57109" } },
+                    { 2, new DifficultySettings { Name = "medium", Enabled = true, Resource = 4, MinDiesel = 15, MaxDiesel = 20, HealthMultiplier = 0.9f, RangeMultiplier = 0.9f, AimDamageMultiplier = 0.9f, skinTurret = 3732045248, MarkerColor = "#e7c50a" } },
+                    { 3, new DifficultySettings { Name = "hard", Enabled = true, Resource = 4, MinDiesel = 20, MaxDiesel = 25, HealthMultiplier = 1.1f, RangeMultiplier = 1.1f, AimDamageMultiplier = 1.1f, skinTurret = 3732045248, MarkerColor = "#9c1825" } },
+                    { 4, new DifficultySettings { Name = "expert", Enabled = true, Resource = 4, MinDiesel = 25, MaxDiesel = 30, HealthMultiplier = 1.2f, RangeMultiplier = 1.2f, AimDamageMultiplier = 1.2f, skinTurret = 3732045248, MarkerColor = "#0000FF" } },
+                    { 5, new DifficultySettings { Name = "nightmare", Enabled = true, Resource = 4, MinDiesel = 30, MaxDiesel = 35, HealthMultiplier = 1.3f, RangeMultiplier = 1.3f, AimDamageMultiplier = 1.3f, skinTurret = 3732445397, MarkerColor = "#9236f5" } }
                 }
             };
             SaveConfig();
@@ -319,7 +319,7 @@ namespace Oxide.Plugins
 
 		private void RegisterImage(byte[] data)
 		{
-			uint crc = FileStorage.server.Store(data, FileStorage.Type.png, default(NetworkableId));
+			uint crc = FileStorage.server.StoreByCrc(CommunityEntity.ServerInstance.net.ID, FileStorage.Type.png, data);
 			imageId = crc.ToString();
 		}
 		private void CacheStaticExcavatorEntities()
@@ -1231,14 +1231,14 @@ namespace Oxide.Plugins
 			
 			if (sourceIsProtected && targetUid != sourceUid)
 			{
-				var player = playerLoot?.GetComponent<BasePlayer>();
+				var player = playerLoot?.baseEntity;
 				if (player != null) SendMsg(player, "CannotExtract");
 				return false;
 			}
 
 			if (targetIsProtected)
 			{
-				var player = playerLoot?.GetComponent<BasePlayer>();
+				var player = playerLoot?.baseEntity;
 				if (player != null) SendMsg(player, "CannotInsert");
 				return false; 
 			}

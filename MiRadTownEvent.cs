@@ -13,7 +13,7 @@ using UnityEngine.Networking;
 
 namespace Oxide.Plugins
 {
-    [Info("Radtown Event", "☠ Ⓜ🅘ⓖ🅤ⓔ🅛 ☠", "2.4.1")]  
+    [Info("Radtown Event", "☠ Ⓜ🅘ⓖ🅤ⓔ🅛 ☠", "2.4.2")]  
     [Description("Evento automatizado para Radtown con NPCs, caja hackeable, cajas élite, torretas, marcadores dinámicos y Helicópteros.")]
     public class MiRadTownEvent : RustPlugin
     {
@@ -188,12 +188,12 @@ namespace Oxide.Plugins
             {
                 Difficulties = new Dictionary<int, DifficultySettings>
                 {
-                    { 0, new DifficultySettings { Name = "easy", Enabled = true, Bradley = false, BradleyCount = 1, HeliPatrol = false, HeliPatrol2 = false, HealthMultiplier = 1.0f, RangeMultiplier = 1.0f, AimDamageMultiplier = 1.0f, NPCs = 10, HackCrates = 1, EliteFoxes = 1, skinTurret = 3732045248, skinDoor = 2940068880, MarkerColor = "#3cd834" } },
-                    { 1, new DifficultySettings { Name = "normal", Enabled = true, Bradley = true, BradleyCount = 1, HeliPatrol = false, HeliPatrol2 = false, HealthMultiplier = 1.2f, RangeMultiplier = 1.2f, AimDamageMultiplier = 1.2f, NPCs = 15, HackCrates = 1, EliteFoxes = 1, skinTurret = 3732045248, skinDoor = 2940068880, MarkerColor = "#e57109" } },
-                    { 2, new DifficultySettings { Name = "medium", Enabled = true, Bradley = true, BradleyCount = 1, HeliPatrol = true, HeliPatrol2 = false, HealthMultiplier = 1.5f, RangeMultiplier = 1.5f, AimDamageMultiplier = 1.5f, NPCs = 20, HackCrates = 1, EliteFoxes = 1, skinTurret = 3732045248, skinDoor = 2940068880, MarkerColor = "#e7c50a" } },
-                    { 3, new DifficultySettings { Name = "expert", Enabled = true, Bradley = true, BradleyCount = 1, HeliPatrol = true, HeliPatrol2 = true, HealthMultiplier = 2.0f, RangeMultiplier = 2.0f, AimDamageMultiplier = 2.0f, NPCs = 25, HackCrates = 1, EliteFoxes = 2, skinTurret = 3732045248, skinDoor = 2940068880, MarkerColor = "#0000FF" } },
-                    { 4, new DifficultySettings { Name = "hard", Enabled = true, Bradley = true, BradleyCount = 1, HeliPatrol = true, HeliPatrol2 = true, HealthMultiplier = 2.5f, RangeMultiplier = 2.5f, AimDamageMultiplier = 2.5f, NPCs = 27, HackCrates = 2, EliteFoxes = 3, skinTurret = 3732045248, skinDoor = 2940068880, MarkerColor = "#9c1825" } },
-                    { 5, new DifficultySettings { Name = "nightmare", Enabled = true, Bradley = true, BradleyCount = 1, HeliPatrol = true, HeliPatrol2 = true, HealthMultiplier = 3.5f, RangeMultiplier = 3.5f, AimDamageMultiplier = 3.5f, NPCs = 29, HackCrates = 2, EliteFoxes = 4, skinTurret = 3732445397, skinDoor = 2940068880, MarkerColor = "#9236f5" } }
+                    { 0, new DifficultySettings { Name = "easy", Enabled = true, Bradley = false, BradleyCount = 1, HeliPatrol = false, HeliPatrol2 = false, HealthMultiplier = 0.5f, RangeMultiplier = 0.5f, AimDamageMultiplier = 0.5f, NPCs = 10, HackCrates = 1, EliteFoxes = 1, skinTurret = 3732045248, skinDoor = 2940068880, MarkerColor = "#3cd834" } },
+                    { 1, new DifficultySettings { Name = "normal", Enabled = true, Bradley = true, BradleyCount = 1, HeliPatrol = false, HeliPatrol2 = false, HealthMultiplier = 0.7f, RangeMultiplier = 0.7f, AimDamageMultiplier = 0.7f, NPCs = 15, HackCrates = 1, EliteFoxes = 1, skinTurret = 3732045248, skinDoor = 2940068880, MarkerColor = "#e57109" } },
+                    { 2, new DifficultySettings { Name = "medium", Enabled = true, Bradley = true, BradleyCount = 1, HeliPatrol = true, HeliPatrol2 = false, HealthMultiplier = 0.9f, RangeMultiplier = 0.9f, AimDamageMultiplier = 0.9f, NPCs = 20, HackCrates = 1, EliteFoxes = 1, skinTurret = 3732045248, skinDoor = 2940068880, MarkerColor = "#e7c50a" } },
+                    { 3, new DifficultySettings { Name = "expert", Enabled = true, Bradley = true, BradleyCount = 1, HeliPatrol = true, HeliPatrol2 = true, HealthMultiplier = 1.1f, RangeMultiplier = 1.1f, AimDamageMultiplier = 1.1f, NPCs = 25, HackCrates = 1, EliteFoxes = 2, skinTurret = 3732045248, skinDoor = 2940068880, MarkerColor = "#0000FF" } },
+                    { 4, new DifficultySettings { Name = "hard", Enabled = true, Bradley = true, BradleyCount = 1, HeliPatrol = true, HeliPatrol2 = true, HealthMultiplier = 1.2f, RangeMultiplier = 1.2f, AimDamageMultiplier = 1.2f, NPCs = 27, HackCrates = 2, EliteFoxes = 3, skinTurret = 3732045248, skinDoor = 2940068880, MarkerColor = "#9c1825" } },
+                    { 5, new DifficultySettings { Name = "nightmare", Enabled = true, Bradley = true, BradleyCount = 1, HeliPatrol = true, HeliPatrol2 = true, HealthMultiplier = 1.3f, RangeMultiplier = 1.3f, AimDamageMultiplier = 1.3f, NPCs = 29, HackCrates = 2, EliteFoxes = 4, skinTurret = 3732445397, skinDoor = 2940068880, MarkerColor = "#9236f5" } }
                 }
             };
             SaveConfig();
@@ -335,7 +335,7 @@ namespace Oxide.Plugins
 
 		private void RegisterImage(byte[] data)
 		{
-			uint crc = FileStorage.server.Store(data, FileStorage.Type.png, default(NetworkableId));
+			uint crc = FileStorage.server.StoreByCrc(CommunityEntity.ServerInstance.net.ID, FileStorage.Type.png, data);
 			imageId = crc.ToString();
 		}
 
