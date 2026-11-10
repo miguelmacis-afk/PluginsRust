@@ -8,7 +8,7 @@ using Oxide.Core.Plugins;
 
 namespace Oxide.Plugins
 {
-    [Info("MiGlobalTasks", "☠ Ⓜ🅘ⓖ🅤ⓔ🅛 ☠", "1.1.3")]
+    [Info("MiGlobalTasks", "☠ Ⓜ🅘ⓖ🅤ⓔ🅛 ☠", "1.1.4")]
     public class MiGlobalTasks : RustPlugin
     {
 		[PluginReference]
