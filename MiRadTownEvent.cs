@@ -13,7 +13,7 @@ using UnityEngine.Networking;
 
 namespace Oxide.Plugins
 {
-    [Info("Radtown Event", "☠ Ⓜ🅘ⓖ🅤ⓔ🅛 ☠", "2.4.2")]  
+    [Info("Radtown Event", "☠ Ⓜ🅘ⓖ🅤ⓔ🅛 ☠", "2.4.3")]  
     [Description("Evento automatizado para Radtown con NPCs, caja hackeable, cajas élite, torretas, marcadores dinámicos y Helicópteros.")]
     public class MiRadTownEvent : RustPlugin
     {
