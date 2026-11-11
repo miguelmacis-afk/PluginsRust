@@ -14,7 +14,7 @@ using UnityEngine.Networking;
 
 namespace Oxide.Plugins
 {
-    [Info("Giant Excavator Event", "☠ Ⓜ🅘ⓖ🅤ⓔ🅛 ☠", "31.1.0")] 
+    [Info("Giant Excavator Event", "☠ Ⓜ🅘ⓖ🅤ⓔ🅛 ☠", "31.1.1")] 
     [Description("Automatiza el evento con corrutinas, UI dinámica y panel de administración avanzado.")]
     public class MiGiantExcavatorEvent : RustPlugin
     {
