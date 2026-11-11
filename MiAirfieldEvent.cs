@@ -13,7 +13,7 @@ using UnityEngine.Networking;
 
 namespace Oxide.Plugins
 {
-    [Info("Airfield Event", "☠ Ⓜ🅘ⓖ🅤ⓔ🅛 ☠", "2.2.2")]
+    [Info("Airfield Event", "☠ Ⓜ🅘ⓖ🅤ⓔ🅛 ☠", "2.2.3")]
     [Description("Evento automatizado para Airfield con Avión rasante, múltiples Bradleys, NPCs, torretas y CUI dinámico de alto rendimiento.")]
     public class MiAirfieldEvent : RustPlugin
     {
